@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jashn: You are invited</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#17070C;--panel:#2A0E17;--line:#4A2430;--ink:#F6EBD3;--mute:#B79AA0;--gold:#D9B45B;--ok:#6FCF97;--no:#EE7F8E;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:30px}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:500}
+.hero{background:radial-gradient(120% 90% at 50% 0,#6B1A2E,#17070C);padding:36px 22px 28px;text-align:center;border-bottom:2px solid var(--gold)}
+.hero small{color:var(--gold);letter-spacing:.14em;font-size:12px;text-transform:uppercase}
+.hero h1{font-size:38px;line-height:1.15;margin:10px 0 6px}
+.hero p{color:var(--mute)}
+.hero a{color:var(--gold);font-size:14px}
+.sec{padding:22px 18px 0}
+.sec h2{font-size:22px;margin-bottom:12px}
+.pass{border:1px solid var(--gold);border-radius:16px;background:var(--panel);padding:16px;margin-bottom:14px;position:relative}
+.pass h3{font-size:22px}.pass small{color:var(--mute)}
+.yn{display:flex;gap:10px;margin-top:12px}
+.yn button{flex:1;padding:13px;border-radius:12px;border:1px solid var(--line);background:none;color:var(--ink);font:500 15px Inter;cursor:pointer}
+.yn .y.on{background:var(--ok);color:#0b2a18;border-color:var(--ok)}
+.yn .n.on{background:var(--no);color:#2a0b10;border-color:var(--no)}
+.step{display:flex;align-items:center;gap:16px}
+.step button{width:44px;height:44px;border-radius:50%;border:1px solid var(--gold);background:none;color:var(--ink);font-size:22px;cursor:pointer}
+.btn{display:block;width:100%;padding:16px;border:0;border-radius:14px;background:linear-gradient(180deg,#F1D88E,#C9A24B);color:#2A0A12;font:600 16px Inter;cursor:pointer;margin-top:22px;text-align:center;text-decoration:none}
+input{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:16px Inter;margin-top:10px}
+.hide{display:none}.msg{padding:60px 24px;text-align:center;color:var(--mute)}
+.thanks{text-align:center;padding:40px 22px 0}.thanks h1{font-size:34px;margin-bottom:6px}
+.badge{text-align:center;color:var(--mute);font-size:13px;margin-top:28px}.badge a{color:var(--gold)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style></head><body>
+<div id="load" class="msg">Loading your invitation...</div>
+<div id="err" class="msg hide">This invitation link is not valid. Please ask the host to send it again.</div>
+
+<div id="form" class="hide">
+ <div class="hero"><small>You are invited, <span id="gn"></span></small><h1 id="et"></h1><p id="ew"></p><a id="map" target="_blank" rel="noopener">Directions</a></div>
+ <div class="sec"><h2>Your functions</h2><div id="passes"></div>
+  <h2 style="margin-top:22px">Extra people with you</h2>
+  <div class="step"><button id="m" aria-label="Fewer">&minus;</button><b id="pl" style="font-size:24px">0</b><button id="p" aria-label="More">+</button></div>
+  <button class="btn" id="send">Send my reply</button></div>
+</div>
+
+<div id="done" class="hide">
+ <div class="thanks"><h1>Thank you</h1><p style="color:var(--mute)" id="dm"></p>
+  <div class="pass" style="margin-top:30px;text-align:left"><h3>Planning your own celebration?</h3><small>Create your event in 30 seconds. Free.</small>
+   <a class="btn" id="own" href="#">Create my event</a>
+   <div id="ios" class="hide"><p style="margin-top:14px;color:var(--mute);font-size:14px">The iPhone version is coming soon. Join the waitlist:</p><input id="em" type="email" placeholder="Your email"><button class="btn" id="wl" style="margin-top:10px">Join waitlist</button></div>
+  </div>
+  <button class="btn" id="chg" style="background:none;border:1px solid var(--line);color:var(--ink)">Change my reply</button></div>
+</div>
+<p class="badge" id="bd">Made with <a href="#" class="ownlink">Jashn</a></p>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" onload="window._fa=1"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* STEP: paste your Firebase config here (see guide). Leave as is to run in demo mode. */
+var CFG={apiKey:"AIzaSyBVEuggBE_VJGU13W7V206wbMVwPIyE0FI",authDomain:"jashn-5d40b.firebaseapp.com",projectId:"jashn-5d40b",storageBucket:"jashn-5d40b.firebasestorage.app",messagingSenderId:"35008735807",appId:"1:35008735807:web:fb8f7b71800b7f0e09268a"};
+var PLAY_URL="https://play.google.com/store/apps/details?id=PASTE_PACKAGE_NAME";
+
+var DEMO_EV={title:"Priya & Raj",where:"Grand Palace Gardens, London",functions:[{n:"Haldi",t:"Fri 27 Nov, 10:30 AM"},{n:"Mehndi",t:"Fri 27 Nov, 6:00 PM"},{n:"Sangeet",t:"Sat 28 Nov, 7:00 PM"},{n:"Reception",t:"Sun 29 Nov, 6:30 PM"}]};
+var DEMO_GU={family:{name:"Aarav & Meera Sharma",fns:[0,1,2,3],going:[],extra:0,status:"pending"},office:{name:"Office colleague",fns:[3],going:[],extra:0,status:"pending"}};
+var q=new URLSearchParams(location.search),eid=q.get("e")||"priya-raj",gid=q.get("g")||"demo";
+var live=CFG.apiKey.indexOf("PASTE")<0,db,ev,gu,ans={},extra=0;
+function $(i){return document.getElementById(i)}
+function show(id){["load","err","form","done"].forEach(function(x){$(x).classList.toggle("hide",x!==id)});scrollTo(0,0)}
+if(live){firebase.initializeApp(CFG);db=firebase.firestore()}
+
+function getData(){
+ if(!live)return Promise.resolve({ev:DEMO_EV,gu:JSON.parse(JSON.stringify(DEMO_GU[q.get("demo")||"family"]))});
+ var er=db.collection("events").doc(eid);
+ return er.get().then(function(s){if(!s.exists)throw 0;return er.collection("guests").doc(gid).get().then(function(g){if(!g.exists)throw 0;return{ev:s.data(),gu:g.data()}})});
+}
+function draw(){
+ $("gn").textContent=gu.name;$("et").textContent=ev.title;$("ew").textContent=ev.where;
+ $("map").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(ev.where);
+ ans={};(gu.going||[]).forEach(function(i){ans[i]=true});
+ if(gu.status&&gu.status!=="pending"){gu.fns.forEach(function(i){if(!ans[i])ans[i]=false})}
+ extra=gu.extra||0;$("pl").textContent=extra;
+ $("passes").innerHTML=gu.fns.map(function(i){var f=ev.functions[i];return '<div class="pass"><h3></h3><small></small><div class="yn" data-f="'+i+'"><button class="y">I will come</button><button class="n">Cannot make it</button></div></div>'}).join("");
+ var ps=$("passes").children;gu.fns.forEach(function(i,k){var f=ev.functions[i];ps[k].querySelector("h3").textContent=f.n;ps[k].querySelector("small").textContent=f.t;mark(ps[k].querySelector(".yn"),i)});
+ show("form");
+}
+function mark(d,i){d.querySelector(".y").classList.toggle("on",ans[i]===true);d.querySelector(".n").classList.toggle("on",ans[i]===false)}
+$("passes").onclick=function(e){var b=e.target.closest("button"),d=e.target.closest(".yn");if(!b||!d)return;var i=+d.dataset.f;ans[i]=b.classList.contains("y");mark(d,i)};
+$("p").onclick=function(){extra=Math.min(extra+1,5);$("pl").textContent=extra};
+$("m").onclick=function(){extra=Math.max(extra-1,0);$("pl").textContent=extra};
+$("send").onclick=function(){
+ var missing=gu.fns.some(function(i){return ans[i]===undefined});
+ if(missing){alert("Please reply to every function.");return}
+ var going=gu.fns.filter(function(i){return ans[i]});
+ var status=going.length?"yes":"no";if(!going.length)extra=0;
+ var data={going:going,extra:extra,status:status};
+ $("send").disabled=true;
+ var job=live?db.collection("events").doc(eid).collection("guests").doc(gid).update(Object.assign({respondedAt:firebase.firestore.FieldValue.serverTimestamp()},data)):Promise.resolve();
+ job.then(function(){gu.going=going;gu.extra=extra;gu.status=status;
+  $("dm").textContent=going.length?ev.title+" can't wait to see you.":ev.title+" have your reply.";
+  $("send").disabled=false;show("done")}).catch(function(){$("send").disabled=false;alert("Could not send. Please check your internet and try again.")});
+};
+$("chg").onclick=function(){draw()};
+var ownHref=PLAY_URL;
+document.querySelectorAll("#own,.ownlink").forEach(function(a){a.href=ownHref;a.target="_blank";a.rel="noopener"});
+var ios=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+if(ios){$("own").classList.add("hide");$("ios").classList.remove("hide")}
+$("wl").onclick=function(){var v=$("em").value.trim();if(v.indexOf("@")<1){alert("Please enter a valid email.");return}
+ var job=live?db.collection("waitlist").add({email:v,at:firebase.firestore.FieldValue.serverTimestamp()}):Promise.resolve();
+ job.then(function(){$("ios").innerHTML='<p style="margin-top:14px;color:var(--ok)">You are on the list. Thank you.</p>'})};
+getData().then(function(d){ev=d.ev;gu=d.gu;gu.fns=[].concat(gu.fns||[]).join(",").split(",").map(function(x){return x.trim()}).filter(Boolean).map(Number);ev.functions=(ev.functions||[]).map(function(f){if(typeof f==="string"){var a=f.split("|");return{n:a[0].trim(),t:(a[1]||"").trim()}}return f});draw()}).catch(function(){show("err")});
+</script>
+</body></html>
