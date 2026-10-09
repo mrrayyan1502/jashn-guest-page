@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jashn: Host dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#17070C;--panel:#2A0E17;--line:#4A2430;--ink:#F6EBD3;--mute:#B79AA0;--gold:#D9B45B;--ok:#6FCF97;--wait:#E5B64E;--no:#EE7F8E;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:40px}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:500}
+.hero{background:radial-gradient(120% 90% at 50% 0,#6B1A2E,#17070C);padding:30px 20px 22px;border-bottom:2px solid var(--gold)}
+.hero small{color:var(--gold);letter-spacing:.14em;font-size:12px;text-transform:uppercase}
+.hero h1{font-size:34px;margin:6px 0 2px}.hero p{color:var(--mute);font-size:14px}
+.sec{padding:20px 16px 0}.sec h2{font-size:20px;margin-bottom:12px}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.num{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center}
+.num b{display:block;font:500 32px 'Playfair Display',serif}.num span{font-size:12px;color:var(--mute)}
+.fn{margin-bottom:12px}.fn .r{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#B8862B,var(--gold));border-radius:9px;transition:width .5s}
+.g{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.g .nm{flex:1;min-width:0}.g .nm b{display:block;font-weight:500;overflow-wrap:anywhere}.g .nm small{color:var(--mute);font-size:12px}
+.st{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.st.yes{color:var(--ok)}.st.pending{color:var(--wait)}.st.no{color:var(--no)}
+.ic{background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 10px;font:500 13px Inter;cursor:pointer}
+.btn{display:block;width:100%;padding:15px;border:0;border-radius:14px;background:linear-gradient(180deg,#F1D88E,#C9A24B);color:#2A0A12;font:600 16px Inter;cursor:pointer;margin-top:16px}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.chip{display:inline-block;padding:9px 14px;margin:0 6px 8px 0;border:1px solid var(--line);border-radius:99px;background:none;color:var(--ink);font:14px Inter;cursor:pointer}
+.chip.on{background:#6B1A2E;border-color:var(--gold)}
+input{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:16px Inter;margin-bottom:12px}
+.sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9;align-items:flex-end;justify-content:center}.sheet.open{display:flex}
+.sheet>div{background:var(--bg);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow:auto}
+.hide{display:none}.msg{padding:70px 24px;text-align:center;color:var(--mute)}.tag{font-size:12px;color:var(--mute);margin-bottom:8px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style></head><body>
+
+<div id="login" class="msg"><h1 style="color:var(--ink);font-size:34px;margin-bottom:6px">Jashn</h1><p>Host dashboard</p>
+ <button class="btn" id="gin">Sign in with Google</button><p id="lerr" style="margin-top:14px;color:var(--no)"></p></div>
+
+<div id="app" class="hide">
+ <div class="hero"><small>Your wedding</small><h1 id="et">...</h1><p id="ew"></p></div>
+ <div class="sec"><h2>Who is coming</h2>
+  <div class="nums"><div class="num"><b id="nY">0</b><span>People attending</span></div><div class="num"><b id="nP">0</b><span>Waiting for reply</span></div><div class="num"><b id="nN">0</b><span>Declined</span></div></div></div>
+ <div class="sec"><h2>Headcount per function</h2><div id="fns"></div></div>
+ <div class="sec"><h2>Guest list</h2><div id="list"></div>
+  <button class="btn" id="add">Add guest</button>
+  <p class="tag" style="margin-top:12px"><span id="cnt">0</span> of 50 free guests used</p>
+  <button class="btn ghost" id="out">Sign out</button></div>
+</div>
+
+<div class="sheet" id="sh"><div>
+ <h2 style="margin-bottom:12px">Add guest</h2>
+ <input id="nn" type="text" placeholder="Guest name">
+ <p class="tag">Quick group</p>
+ <button class="chip" data-grp="all">Family: all functions</button><button class="chip" data-grp="last2">Friends: last two</button><button class="chip" data-grp="last">Office: last one only</button>
+ <p class="tag" style="margin-top:6px">Invited to</p><div id="ticks"></div>
+ <button class="btn" id="save">Save guest</button><button class="btn ghost" id="cancel">Cancel</button>
+</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+var CFG={apiKey:"AIzaSyBVEuggBE_VJGU13W7V206wbMVwPIyE0FI",authDomain:"jashn-5d40b.firebaseapp.com",projectId:"jashn-5d40b",storageBucket:"jashn-5d40b.firebasestorage.app",messagingSenderId:"35008735807",appId:"1:35008735807:web:fb8f7b71800b7f0e09268a"};
+var eid=new URLSearchParams(location.search).get("e")||"priya-raj";
+firebase.initializeApp(CFG);var auth=firebase.auth(),db=firebase.firestore();
+var evRef=db.collection("events").doc(eid),ev=null,guests=[],pick=[],unsub=null;
+function $(i){return document.getElementById(i)}
+function fnList(x){return [].concat(x||[]).join(",").split(",").map(function(s){return s.trim()}).filter(Boolean).map(Number)}
+function funcs(){return(ev.functions||[]).map(function(f){var a=String(f).split("|");return{n:a[0].trim(),t:(a[1]||"").trim()}})}
+$("gin").onclick=function(){$("lerr").textContent="";auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){$("lerr").textContent="Sign in failed: "+(e.code||"")})};
+$("out").onclick=function(){auth.signOut()};
+auth.onAuthStateChanged(function(u){
+ if(unsub){unsub();unsub=null}
+ if(!u){$("app").classList.add("hide");$("login").classList.remove("hide");return}
+ $("login").classList.add("hide");
+ evRef.get().then(function(s){if(!s.exists)throw 0;ev=s.data();$("et").textContent=ev.title||"";$("ew").textContent=ev.where||"";$("app").classList.remove("hide");
+  unsub=evRef.collection("guests").onSnapshot(function(q){guests=q.docs.map(function(d){var x=d.data();return{id:d.id,name:x.name||"",fns:fnList(x.fns),going:fnList(x.going),extra:+x.extra||0,status:x.status||"pending"}});draw()},denied)}).catch(denied)});
+function denied(){$("app").classList.add("hide");$("login").classList.remove("hide");$("lerr").textContent="This account is not allowed to see this wedding.";auth.signOut()}
+function draw(){
+ var y=0,p=0,n=0;guests.forEach(function(g){if(g.status==="yes")y+=1+g.extra;else if(g.status==="no")n++;else p++});
+ $("nY").textContent=y;$("nP").textContent=p;$("nN").textContent=n;$("cnt").textContent=guests.length;
+ $("fns").innerHTML=funcs().map(function(f,i){var c=0,t=0;guests.forEach(function(g){if(g.fns.indexOf(i)>-1){t++;if(g.going.indexOf(i)>-1)c+=1+g.extra}});
+  return '<div class="fn"><div class="r"><span></span><b>'+c+' coming, '+t+' invited</b></div><div class="bar"><i style="width:'+Math.min(100,t?c/t*50:0)+'%"></i></div></div>'}).join("");
+ var rs=$("fns").querySelectorAll(".r span");funcs().forEach(function(f,i){rs[i].textContent=f.n});
+ var L=$("list");L.innerHTML="";
+ guests.sort(function(a,b){return a.name.localeCompare(b.name)}).forEach(function(g){
+  var row=document.createElement("div");row.className="g";
+  var nm=document.createElement("div");nm.className="nm";var b=document.createElement("b");b.textContent=g.name;var s=document.createElement("small");s.textContent=g.fns.map(function(i){return(funcs()[i]||{}).n}).join(", ");nm.appendChild(b);nm.appendChild(s);
+  var st=document.createElement("span");st.className="st "+g.status;st.textContent={yes:"Attending",no:"Declined",pending:"Pending"}[g.status]||"Pending";
+  var wa=document.createElement("button");wa.className="ic";wa.textContent="WhatsApp";wa.onclick=function(){var m="You are invited to "+ev.title+". Please reply here: "+link(g.id);window.open("https://wa.me/?text="+encodeURIComponent(m),"_blank")};
+  var cp=document.createElement("button");cp.className="ic";cp.textContent="Copy";cp.onclick=function(){var l=link(g.id);(navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(function(){cp.textContent="Copied"}).catch(function(){prompt("Copy this link:",l)});setTimeout(function(){cp.textContent="Copy"},1500)};
+  row.appendChild(nm);row.appendChild(st);row.appendChild(wa);row.appendChild(cp);L.appendChild(row)})}
+function link(id){return location.href.replace(/host\.html.*$/,"").replace(/\?.*$/,"")+"?e="+encodeURIComponent(eid)+"&g="+encodeURIComponent(id)}
+function ticks(){$("ticks").innerHTML=funcs().map(function(f,i){return '<button class="chip'+(pick.indexOf(i)>-1?' on':'')+'" data-t="'+i+'">'+f.n+'</button>'}).join("")}
+$("add").onclick=function(){pick=[];$("nn").value="";ticks();$("sh").classList.add("open")};
+$("cancel").onclick=function(){$("sh").classList.remove("open")};
+$("ticks").onclick=function(e){var t=e.target.dataset.t;if(t==null)return;t=+t;var k=pick.indexOf(t);k>-1?pick.splice(k,1):pick.push(t);ticks()};
+document.querySelectorAll("[data-grp]").forEach(function(b){b.onclick=function(){var n=funcs().length,a=[];for(var i=0;i<n;i++)a.push(i);pick=b.dataset.grp==="all"?a:b.dataset.grp==="last2"?a.slice(-2):a.slice(-1);ticks()}});
+$("save").onclick=function(){var v=$("nn").value.trim();if(!v||!pick.length){alert("Add a name and choose at least one function.");return}
+ var id=v.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,20)+"-"+Math.random().toString(36).slice(2,6);
+ evRef.collection("guests").doc(id).set({name:v,fns:pick.slice().sort(),status:"pending",extra:0}).then(function(){$("sh").classList.remove("open")}).catch(function(){alert("Could not save. Please try again.")})};
+</script>
+</body></html>
